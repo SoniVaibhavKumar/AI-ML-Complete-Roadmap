@@ -1,0 +1,10 @@
+# Ignore datasets
+*.csv
+*.tar.gz
+*.zip
+
+# Ignore checkpoints
+.ipynb_checkpoints/
+
+# Ignore data folders
+Deep Learning/data/
