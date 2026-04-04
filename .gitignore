@@ -8,3 +8,18 @@
 
 # Ignore data folders
 Deep Learning/data/
+
+# Jupyter
+*.ipynb_checkpoints
+
+# Data
+*.pdf
+*.txt
+
+# Vector DB / embeddings
+*.bin
+*.sqlite3
+vector_store/
+
+# Python
+__pycache__/
