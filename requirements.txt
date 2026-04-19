@@ -1,5 +1,4 @@
-streamlit==1.56.0
-agno
+streamlit
 groq
 youtube-transcript-api
 python-dotenv
