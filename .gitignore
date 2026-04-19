@@ -16,6 +16,10 @@ Deep Learning/data/
 *.pdf
 *.txt
 
+# Allow requirements files
+!requirements.txt
+!**/requirements.txt
+
 # Vector DB / embeddings
 *.bin
 *.sqlite3
