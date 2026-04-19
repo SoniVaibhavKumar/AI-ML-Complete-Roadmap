@@ -1,55 +1,39 @@
-from textwrap import dedent
-from agno.agent import Agent
-from agno.models.groq import Groq
-from agno.tools.youtube import YouTubeTools
+from groq import Groq
+from youtube_transcript_api import YouTubeTranscriptApi
+import streamlit as st
+import re
 
-def build_youtube_agent():
-    return Agent(
-        name="YouTube Agent",
-        model=Groq(id="llama3-70b-8192"),
-        tools=[YouTubeTools()],
-        instructions=dedent("""\
-            You are an expert YouTube content analyst with a keen eye for detail! 🎓
-            Follow these steps for comprehensive video analysis:
-            1. Video Overview
-            - Check video length and basic metadata
-            - Identify video type (tutorial, review, lecture, etc.)
-            - Note the content structure
-            2. Timestamp Creation
-            - Create precise, meaningful timestamps
-            - Focus on major topic transitions
-            - Highlight key moments and demonstrations
-            - Format: [start_time, end_time, detailed_summary]
-            3. Content Organization
-            - Group related segments
-            - Identify main themes
-            - Track topic progression
+def extract_video_id(url):
+    if "v=" in url:
+        return url.split("v=")[1].split("&")[0]
+    if "youtu.be/" in url:
+        return url.split("youtu.be/")[1].split("?")[0]
+    return url
 
-            Your analysis style:
-            - Begin with a video overview
-            - Use clear, descriptive segment titles
-            - Include relevant emojis for content types:
-            📚 Educational
-            💻 Technical
-            🎮 Gaming
-            📱 Tech Review
-            🎨 Creative
-            - Highlight key learning points
-            - Note practical demonstrations
-            - Mark important references
+def analyze_video(url):
+    video_id = extract_video_id(url)
 
-            Quality Guidelines:
-            - Verify timestamp accuracy
-            - Avoid timestamp hallucination
-            - Ensure comprehensive coverage
-            - Maintain consistent detail level
-            - Focus on valuable content markers
-        """),
-        markdown=True,
-)
+    transcript = YouTubeTranscriptApi.get_transcript(video_id)
+    text = " ".join([item["text"] for item in transcript[:200]])
 
+    client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# youtube_agent.print_response(
-#     "Analyze this video: https://www.youtube.com/watch?v=YXfRsS8MzX4&t=776s",
-#     stream=True,
-# )
+    prompt = f"""
+    Analyze this YouTube video transcript.
+
+    Give:
+    1. Summary
+    2. Key points
+    3. Important learnings
+    4. Final verdict
+
+    Transcript:
+    {text}
+    """
+
+    response = client.chat.completions.create(
+        model="llama3-8b-8192",
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    return response.choices[0].message.content
